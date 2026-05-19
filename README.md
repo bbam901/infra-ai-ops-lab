@@ -156,7 +156,29 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 7. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
+## 7. 실행 결과
+
+본 실습 환경을 기동하고 장애 시뮬레이션을 작동했을 때 수집되는 지표와 로그, 그리고 생성된 보고서의 검증 결과입니다.
+
+### 1) Docker Compose 멀티 컨테이너 환경 정상 가동
+![Docker Compose 실행 검증](docs/images/01-docker-compose-up.png)
+- `docker compose up -d` 명령을 통해 Nginx, FastAPI, Prometheus, Loki, Promtail, cAdvisor, Grafana 컨테이너가 오류 없이 독립된 단일 브리지 네트워크 내에서 유기적으로 정상 기동됨을 확인했습니다.
+
+### 2) Grafana를 통한 Loki 수집 로그 실시간 연동
+![Grafana Loki 로그 확인](docs/images/02-grafana-loki-error-logs.png)
+- Promtail 수집기가 Docker Socket을 추적하여 FastAPI 및 Nginx 컨테이너의 표준 출력 로그를 Loki DB에 안정적으로 전달하고 있음을 Grafana Explore 콘솔을 통해 연동 검증했습니다.
+
+### 3) Prometheus 메트릭 수집 및 쿼리 동작 검증
+![Prometheus 메트릭 쿼리 동작](docs/images/03-prometheus-up-query.png)
+- FastAPI의 수집 엔드포인트 `/metrics` 및 cAdvisor 컨테이너 리소스 관리 지표가 Prometheus 시계열 DB에 누락 없이 수집되고 있으며, PromQL 쿼리 조회가 정상 수행됨을 확인했습니다.
+
+### 4) 자동 생성된 한국어 장애 진단 보고서
+![한국어 장애 리포트 도출](docs/images/04-incident-report-ko.png)
+- 장애 진단 분석 스크립트(`ai_incident_reporter.py`) 실행 시, 메트릭의 임계치 초과 여부와 Loki DB 내 실시간 에러 트레이스 로그를 종합해 원인 진단과 권장 조치가 담긴 한국어 장애 보고서가 `reports/` 폴더 내에 마크다운 형식으로 올바르게 자동 생성됨을 검증했습니다.
+
+---
+
+## 8. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
 - **시각화 자동 프로비저닝 (Grafana Auto-Provisioning)**:
   - 수작업 등록 방식 대신 코드 설정을 통해 Grafana 컨테이너 기동 시 Prometheus 및 Loki가 자동으로 바인딩되며, 커스텀 JSON 명세 대시보드가 즉시 탑재되도록 인프라 코드 환경을 설계했습니다.
 - **메트릭과 로그의 맥락 통합 (Observability Correlation)**:
