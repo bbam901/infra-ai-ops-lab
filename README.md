@@ -164,7 +164,7 @@ python scripts/ai_incident_reporter.py
    - 키가 존재하지 않으면 사전에 구현된 이상 지표 패턴 분석 로직에 따라 매치되는 로그 분석 결과를 조합하여 Markdown 문서를 작성합니다.
 4. **리포트 저장**: 생성물은 루트 폴더 내 `reports/` 하위에 고유 타임스탬프를 이름으로 하여 저장됩니다. (예: `reports/incident_report_20260520_031024.md`)
 
-*※ 작성 완료된 한국어 장애 보고서 양식은 [보고서 샘플 양식](file:///d:/infra-ai-ops-lab/reports/sample_incident_report.md)을 참조해 주십시오.*
+*※ 작성 완료된 한국어 장애 보고서 양식은 [보고서 샘플 양식](reports/sample_incident_report.md)을 참조해 주십시오.*
 
 ---
 
@@ -187,6 +187,30 @@ python scripts/ai_incident_reporter.py
 ### 4) 자동 생성된 한국어 장애 진단 보고서
 ![한국어 장애 리포트 도출](docs/images/04-incident-report-ko.png)
 - 장애 진단 분석 스크립트(`ai_incident_reporter.py`) 실행 시, 메트릭의 임계치 초과 여부와 Loki DB 내 실시간 에러 트레이스 로그를 종합해 원인 진단과 권장 조치가 담긴 한국어 장애 보고서가 `reports/` 폴더 내에 마크다운 형식으로 올바르게 자동 생성됨을 검증했습니다.
+
+### 5) Alertmanager 경보 수신 확인
+![Alertmanager 경보 확인](docs/images/05-alertmanager-firing-alert.png)
+- Prometheus Alert Rule이 조건을 만족했을 때 Alertmanager UI에서 경보가 수신되고 표시되는 것을 확인했습니다.
+
+### 6) Prometheus Alerts 상태 확인
+![Prometheus Alerts 확인](docs/images/06-prometheus-alerts-firing.png)
+- Prometheus Alerts 화면에서 경보 규칙이 평가되고, 장애 시뮬레이션 중 경보 상태가 전이되는 과정을 확인했습니다.
+
+### 7) Grafana 대시보드 메트릭 확인
+![Grafana 대시보드 메트릭 확인](docs/images/07-grafana-dashboard-metrics.png)
+- Grafana 대시보드에서 요청 수, 5xx 에러 추이, 컨테이너 CPU/Memory 사용량, 로그 스트림을 한 화면에서 확인할 수 있도록 구성했습니다.
+
+### 8) 장애 대응 Runbook 문서화
+![장애 대응 Runbook](docs/images/08-runbook-document.png)
+- 장애 발생 시 확인 순서, Prometheus 쿼리, Loki 로그 조회 방법, 장애 리포트 생성 절차를 문서화했습니다.
+
+### 9) GitHub Actions 자동 검증
+![GitHub Actions 검증 성공](docs/images/09-github-actions-success.png)
+- GitHub Actions를 통해 `docker compose config`와 주요 설정 파일 존재 여부를 자동 검증하도록 구성했습니다.
+
+### 10) GitHub README 표시 확인
+![GitHub README 표시 확인](docs/images/10-github-readme-preview.png)
+- GitHub 저장소에서 README의 한국어 설명과 이미지가 정상적으로 표시되는지 확인했습니다.
 
 ---
 
@@ -216,7 +240,7 @@ python scripts/ai_incident_reporter.py
    ```
 2. cAdvisor 및 Prometheus에서 실시간 CPU 수치가 상승하는 것을 관측하고, `HighContainerCPUUsage` 경보가 발령되는지 [Alertmanager](http://localhost:9093)에서 확인합니다.
 
-*※ 세부적인 경보별 장애 진단 방법 및 트러블슈팅 가이드는 [인프라 장애 대응 런북](file:///d:/infra-ai-ops-lab/docs/runbook.md) 문서를 참조하십시오.*
+*※ 세부적인 경보별 장애 진단 방법 및 트러블슈팅 가이드는 [인프라 장애 대응 런북](docs/runbook.md) 문서를 참조하십시오.*
 
 ---
 
@@ -225,15 +249,15 @@ python scripts/ai_incident_reporter.py
 ### Grafana 대시보드 변경 사항이 반영되지 않거나 "No data"가 표시될 때
 - **원인 및 특징**:
   - **provisioned dashboard는 Grafana UI에서 삭제할 수 없습니다.**
-  - 대시보드는 [grafana/provisioning/dashboards/dashboard.json](file:///d:/infra-ai-ops-lab/grafana/provisioning/dashboards/dashboard.json) 파일로 관리됩니다.
+  - 대시보드는 [grafana/provisioning/dashboards/dashboard.json](grafana/provisioning/dashboards/dashboard.json) 파일로 관리됩니다.
 - **조치 방법**:
-  1. [dashboard.json](file:///d:/infra-ai-ops-lab/grafana/provisioning/dashboards/dashboard.json) 파일에서 CPU/Memory 패널 쿼리, `title`(`인프라 모니터링 대시보드 v2` 등), `uid`(`infra-ai-ops-v6` 등), `version` 값을 수정합니다.
+  1. [dashboard.json](grafana/provisioning/dashboards/dashboard.json) 파일에서 CPU/Memory 패널 쿼리, `title`(`인프라 모니터링 대시보드 v2` 등), `uid`(`infra-ai-ops-v6` 등), `version` 값을 수정합니다.
   2. 대시보드 수정 후 터미널에서 아래 명령을 실행하여 **docker compose restart grafana**로 변경 사항을 반영합니다.
      ```bash
      docker compose restart grafana
      ```
 
-*※ 더 상세한 환경설정 예외 및 도커/네트워크 오작동 트러블슈팅 케이스는 [운영 트러블슈팅 가이드](file:///d:/infra-ai-ops-lab/docs/troubleshooting.md) 문서를 참조하십시오.*
+*※ 더 상세한 환경설정 예외 및 도커/네트워크 오작동 트러블슈팅 케이스는 [운영 트러블슈팅 가이드](docs/troubleshooting.md) 문서를 참조하십시오.*
 
 ---
 
