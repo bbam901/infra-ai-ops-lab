@@ -29,6 +29,7 @@ graph TD
     subgraph Observability
         Prometheus["Prometheus (Port 9090)"] -.->|메트릭 수집| App
         Prometheus -.->|컨테이너 메트릭 수집| cAdvisor["cAdvisor (Port 8080)"]
+        Prometheus -->|경보 발생 이벤트 전송| Alertmanager["Alertmanager (Port 9093)"]
         
         Promtail["Promtail (Log Shipper)"] -.->|Docker 소켓 로그 수집| Loki["Loki (Port 3100)"]
         
@@ -53,7 +54,7 @@ graph TD
 
 ## 3. 기술 스택
 - **웹 및 게이트웨이**: Nginx, FastAPI, Uvicorn
-- **모니터링 및 메트릭**: Prometheus, cAdvisor
+- **모니터링 및 메트릭**: Prometheus, cAdvisor, Alertmanager
 - **중앙 로그 수집**: Loki, Promtail
 - **데이터 시각화**: Grafana
 - **자동화 스크립트**: Python 3.10+, Requests, Google GenAI SDK (Gemini-2.5-Flash)
@@ -96,6 +97,7 @@ docker compose up -d --build
 | **Nginx** | 시스템 인그레스 관문 (80 포트) | [http://localhost](http://localhost) | FastAPI `/` 기본 화면 반환 |
 | **FastAPI App** | 웹 서비스 호스트 포트 바인딩 | [http://localhost:8001](http://localhost:8001) | API 문서 조회: `/docs` |
 | **Prometheus** | 시계열 메트릭 데이터베이스 콘솔 | [http://localhost:9090](http://localhost:9090) | 수집 대상(Targets) 활성 상태 점검 |
+| **Alertmanager** | 경보(Alert) 상태 모니터링 및 관리 도구 | [http://localhost:9093](http://localhost:9093) | Prometheus 연동 알림 UI |
 | **Grafana** | 모니터링 대시보드 시각화 도구 | [http://localhost:3050](http://localhost:3050) | 로그인 계정 정보: `admin` / `admin` |
 | **cAdvisor** | 실시간 컨테이너 리소스 모니터링 | [http://localhost:8080](http://localhost:8080) | 각 컨테이너 세부 메모리/CPU 사용 정보 |
 | **Loki** | 중앙 집중 로그 저장소 API | [http://localhost:3100](http://localhost:3100) | 로그 통신 백엔드 |
@@ -178,7 +180,37 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 8. 트러블슈팅 가이드 (Troubleshooting)
+## 8. Prometheus 경보 규칙(Alert Rules) 및 Alertmanager 검증
+
+본 랩에서는 실무 인프라 환경에서 발생하는 서비스 오류 및 리소스 고하중 상황을 실시간으로 감지하고 모니터링하기 위해 Prometheus Alert Rule과 Alertmanager를 구성했습니다.
+
+### 1) 경보 규칙 구성 (alert.rules.yml)
+- **High5xxErrorRate (Critical)**: 최근 1분 동안 발생한 FastAPI 서비스 요청 중 5xx 응답 비율이 10% 이상일 때 발령됩니다.
+- **HighContainerCPUUsage (Warning)**: cAdvisor가 감지한 개별 컨테이너의 CPU 사용률이 80%를 초과할 때 발령됩니다.
+
+### 2) 경보 작동 검증 절차
+장애 시뮬레이션 동작 시 Prometheus UI(`http://localhost:9090/alerts`) 및 Alertmanager UI(`http://localhost:9093`)를 통해 경보 상태가 `Active (Pending -> Firing)` 상태로 전이되는 것을 확인할 수 있습니다.
+
+#### A. 에러 경보(High5xxErrorRate) 검증
+1. 다음 명령을 실행하여 고의적인 5xx 오류 트래픽을 주입합니다.
+   ```bash
+   python scripts/chaos_injector.py --mode error --duration 60
+   ```
+2. [Prometheus Alerts 페이지](http://localhost:9090/alerts)에서 `High5xxErrorRate` 경보가 **PENDING**을 거쳐 **FIRING**으로 변하는지 확인합니다.
+3. [Alertmanager UI](http://localhost:9093)에 접속하여 경보가 정상 등록되어 표시되는지 검증합니다.
+
+#### B. CPU 과부하 경보(HighContainerCPUUsage) 검증
+1. 다음 명령을 실행하여 서비스 지연 및 CPU 과부하 상황을 유도합니다.
+   ```bash
+   python scripts/chaos_injector.py --mode latency --duration 60
+   ```
+2. cAdvisor 및 Prometheus에서 실시간 CPU 수치가 상승하는 것을 관측하고, `HighContainerCPUUsage` 경보가 발령되는지 [Alertmanager](http://localhost:9093)에서 확인합니다.
+
+*※ 세부적인 경보별 장애 진단 방법 및 트러블슈팅 가이드는 [인프라 장애 대응 런북](file:///d:/infra-ai-ops-lab/docs/runbook.md) 문서를 참조하십시오.*
+
+---
+
+## 9. 트러블슈팅 가이드 (Troubleshooting)
 
 ### Grafana 대시보드 변경 사항이 반영되지 않거나 "No data"가 표시될 때
 - **원인 및 특징**:
@@ -193,7 +225,7 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 9. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
+## 10. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
 - **시각화 자동 프로비저닝 (Grafana Auto-Provisioning)**:
   - 수작업 등록 방식 대신 코드 설정을 통해 Grafana 컨테이너 기동 시 Prometheus 및 Loki가 자동으로 바인딩되며, 커스텀 JSON 명세 대시보드가 즉시 탑재되도록 인프라 코드 환경을 설계했습니다.
 - **메트릭과 로그의 맥락 통합 (Observability Correlation)**:

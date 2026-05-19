@@ -1,0 +1,20 @@
+groups:
+  - name: infra-ai-ops-alerts
+    rules:
+      - alert: High5xxErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[1m])) / sum(rate(http_requests_total[1m]))) * 100 >= 10
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP 5xx Error Rate detected on FastAPI App"
+          description: "HTTP 5xx error rate is {{ $value | printf \"%.2f\" }}% (threshold: 10%)"
+
+      - alert: HighContainerCPUUsage
+        expr: sum by (id) (rate(container_cpu_usage_seconds_total{id!="/"}[1m])) * 100 > 80
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Container CPU Usage detected"
+          description: "Container {{ $labels.id }} CPU usage is {{ $value | printf \"%.2f\" }}% (threshold: 80%)"
