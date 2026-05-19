@@ -1,5 +1,5 @@
 # infra-ai-ops-lab
-[![Validate Setup](https://github.com/bumku/infra-ai-ops-lab/actions/workflows/validate.yml/badge.svg)](https://github.com/bumku/infra-ai-ops-lab/actions/workflows/validate.yml)
+[![Validate Setup](https://github.com/bbam901/infra-ai-ops-lab/actions/workflows/validate.yml/badge.svg)](https://github.com/bbam901/infra-ai-ops-lab/actions/workflows/validate.yml)
 
 > **SRE 관점의 학습 프로젝트: Docker Compose 기반 모니터링 및 AI/규칙 기반 장애 대응 자동화 랩**
 
