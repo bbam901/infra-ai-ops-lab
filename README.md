@@ -168,9 +168,9 @@ python scripts/ai_incident_reporter.py
 ![Grafana Loki 로그 확인](docs/images/02-grafana-loki-error-logs.png)
 - Promtail 수집기가 Docker Socket을 추적하여 FastAPI 및 Nginx 컨테이너의 표준 출력 로그를 Loki DB에 안정적으로 전달하고 있음을 Grafana Explore 콘솔을 통해 연동 검증했습니다.
 
-### 3) Prometheus 메트릭 수집 및 쿼리 동작 검증
+### 3) cAdvisor 기반 컨테이너 CPU/Memory 메트릭 시각화
 ![Prometheus 메트릭 쿼리 동작](docs/images/03-prometheus-up-query.png)
-- FastAPI의 수집 엔드포인트 `/metrics` 및 cAdvisor 컨테이너 리소스 관리 지표가 Prometheus 시계열 DB에 누락 없이 수집되고 있으며, PromQL 쿼리 조회가 정상 수행됨을 확인했습니다.
+- cAdvisor 메트릭을 기반으로 컨테이너 CPU/Memory 사용량 합계를 시각화하며, 시스템 전체의 자원 사용 추이를 실시간으로 한눈에 파악할 수 있도록 대시보드 구성을 간소화하여 검증했습니다.
 
 ### 4) 자동 생성된 한국어 장애 진단 보고서
 ![한국어 장애 리포트 도출](docs/images/04-incident-report-ko.png)
@@ -178,7 +178,22 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 8. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
+## 8. 트러블슈팅 가이드 (Troubleshooting)
+
+### Grafana 대시보드 변경 사항이 반영되지 않거나 "No data"가 표시될 때
+- **원인 및 특징**:
+  - **provisioned dashboard는 Grafana UI에서 삭제할 수 없습니다.**
+  - 대시보드는 [grafana/provisioning/dashboards/dashboard.json](file:///d:/infra-ai-ops-lab/grafana/provisioning/dashboards/dashboard.json) 파일로 관리됩니다.
+- **조치 방법**:
+  1. [dashboard.json](file:///d:/infra-ai-ops-lab/grafana/provisioning/dashboards/dashboard.json) 파일에서 CPU/Memory 패널 쿼리, `title`(`인프라 모니터링 대시보드 v2` 등), `uid`(`infra-ai-ops-v6` 등), `version` 값을 수정합니다.
+  2. 대시보드 수정 후 터미널에서 아래 명령을 실행하여 **docker compose restart grafana**로 변경 사항을 반영합니다.
+     ```bash
+     docker compose restart grafana
+     ```
+
+---
+
+## 9. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
 - **시각화 자동 프로비저닝 (Grafana Auto-Provisioning)**:
   - 수작업 등록 방식 대신 코드 설정을 통해 Grafana 컨테이너 기동 시 Prometheus 및 Loki가 자동으로 바인딩되며, 커스텀 JSON 명세 대시보드가 즉시 탑재되도록 인프라 코드 환경을 설계했습니다.
 - **메트릭과 로그의 맥락 통합 (Observability Correlation)**:

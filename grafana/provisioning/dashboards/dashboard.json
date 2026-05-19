@@ -30,7 +30,7 @@
         "y": 0
       },
       "id": 1,
-      "title": "애플리케이션 요청 수 (Request Rate)",
+      "title": "애플리케이션 요청 수",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -59,7 +59,7 @@
         "y": 0
       },
       "id": 2,
-      "title": "HTTP 5xx 에러 발생 추이 (5xx Error Rate)",
+      "title": "HTTP 5xx 에러 발생 추이",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -88,7 +88,7 @@
         "y": 8
       },
       "id": 3,
-      "title": "컨테이너 CPU 사용률 (Container CPU Usage %)",
+      "title": "컨테이너 CPU 사용률 합계 (%)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -101,8 +101,8 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{container!=\"\"}[1m])) by (container) * 100",
-          "legendFormat": "{{container}}",
+          "expr": "sum(rate(container_cpu_usage_seconds_total[1m])) * 100",
+          "legendFormat": "합계",
           "range": true,
           "refId": "A"
         }
@@ -117,7 +117,7 @@
         "y": 8
       },
       "id": 4,
-      "title": "컨테이너 메모리 사용량 (Container Memory Usage MB)",
+      "title": "컨테이너 메모리 사용량 합계 (MB)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -130,8 +130,8 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(container_memory_working_set_bytes{container!=\"\"}) by (container) / 1024 / 1024",
-          "legendFormat": "{{container}}",
+          "expr": "sum(container_memory_usage_bytes) / 1024 / 1024",
+          "legendFormat": "합계",
           "range": true,
           "refId": "A"
         }
@@ -146,7 +146,7 @@
         "y": 16
       },
       "id": 5,
-      "title": "애플리케이션 및 인프라 로그 스트림 (Loki Logs)",
+      "title": "애플리케이션 및 인프라 로그 스트림",
       "type": "logs",
       "datasource": {
         "type": "loki",
@@ -192,8 +192,8 @@
     ]
   },
   "timezone": "",
-  "title": "Infra AI-Ops Lab Dashboard",
-  "uid": "infra-ai-ops",
-  "version": 1,
+  "title": "인프라 모니터링 대시보드",
+  "uid": "infra-ai-ops-v7",
+  "version": 7,
   "weekStart": ""
 }
