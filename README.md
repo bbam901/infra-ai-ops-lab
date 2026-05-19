@@ -1,4 +1,6 @@
 # infra-ai-ops-lab
+[![Validate Setup](https://github.com/bumku/infra-ai-ops-lab/actions/workflows/validate.yml/badge.svg)](https://github.com/bumku/infra-ai-ops-lab/actions/workflows/validate.yml)
+
 > **SRE 관점의 학습 프로젝트: Docker Compose 기반 모니터링 및 AI/규칙 기반 장애 대응 자동화 랩**
 
 본 프로젝트는 실무 인프라 운영 환경을 가정하여 진행한 개인 학습 프로젝트입니다.  
@@ -61,7 +63,15 @@ graph TD
 
 ---
 
-## 4. 시작하기 및 실행 방법
+## 4. 운영 및 대응 문서 (Documentation)
+본 프로젝트는 장애 탐지, 전파 및 트러블슈팅의 전체 라이프사이클을 체계적으로 학습하기 위해 상세한 운영 문서를 제공합니다.
+
+- 📖 **[장애 대응 런북 (Alert Runbook)](docs/runbook.md)**: 실무 수준의 경보 발생 시 1~4단계 대응 프로토콜 및 Prometheus / Loki 원시 분석 쿼리 가이드
+- 🛠️ **[운영 트러블슈팅 가이드 (Troubleshooting Guide)](docs/troubleshooting.md)**: Docker 권한 에러, Grafana 대시보드 덮어쓰기 오작동, Nginx 게이트웨이 지연 대응 방안
+
+---
+
+## 5. 시작하기 및 실행 방법
 
 ### 사전 준비사항
 - Docker 및 Docker Compose가 설치되어 있어야 합니다.
@@ -104,7 +114,7 @@ docker compose up -d --build
 
 ---
 
-## 5. 장애 시뮬레이션 시나리오 실행
+## 6. 장애 시뮬레이션 시나리오 실행
 
 실습용 Python 패키지 라이브러리를 먼저 설치합니다.
 ```bash
@@ -139,7 +149,7 @@ python scripts/chaos_injector.py --mode mixed --duration 60
 
 ---
 
-## 6. 장애 리포트 자동 도출 기법
+## 7. 장애 리포트 자동 도출 기법
 
 장애 유입이 완료되거나 진행 중인 상태에서 진단 분석기를 작동시킵니다.
 ```bash
@@ -158,7 +168,7 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 7. 실행 결과
+## 8. 실행 결과
 
 본 실습 환경을 기동하고 장애 시뮬레이션을 작동했을 때 수집되는 지표와 로그, 그리고 생성된 보고서의 검증 결과입니다.
 
@@ -180,7 +190,7 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 8. Prometheus 경보 규칙(Alert Rules) 및 Alertmanager 검증
+## 9. Prometheus 경보 규칙(Alert Rules) 및 Alertmanager 검증
 
 본 랩에서는 실무 인프라 환경에서 발생하는 서비스 오류 및 리소스 고하중 상황을 실시간으로 감지하고 모니터링하기 위해 Prometheus Alert Rule과 Alertmanager를 구성했습니다.
 
@@ -210,7 +220,7 @@ python scripts/ai_incident_reporter.py
 
 ---
 
-## 9. 트러블슈팅 가이드 (Troubleshooting)
+## 10. 트러블슈팅 가이드 (Troubleshooting)
 
 ### Grafana 대시보드 변경 사항이 반영되지 않거나 "No data"가 표시될 때
 - **원인 및 특징**:
@@ -223,9 +233,11 @@ python scripts/ai_incident_reporter.py
      docker compose restart grafana
      ```
 
+*※ 더 상세한 환경설정 예외 및 도커/네트워크 오작동 트러블슈팅 케이스는 [운영 트러블슈팅 가이드](file:///d:/infra-ai-ops-lab/docs/troubleshooting.md) 문서를 참조하십시오.*
+
 ---
 
-## 10. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
+## 11. 주니어 인프라 엔지니어 관점의 주요 학습 포인트
 - **시각화 자동 프로비저닝 (Grafana Auto-Provisioning)**:
   - 수작업 등록 방식 대신 코드 설정을 통해 Grafana 컨테이너 기동 시 Prometheus 및 Loki가 자동으로 바인딩되며, 커스텀 JSON 명세 대시보드가 즉시 탑재되도록 인프라 코드 환경을 설계했습니다.
 - **메트릭과 로그의 맥락 통합 (Observability Correlation)**:

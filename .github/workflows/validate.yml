@@ -1,0 +1,39 @@
+name: Validate Setup
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up env file
+      run: cp .env.example .env
+
+    - name: Validate Docker Compose Configuration
+      run: docker compose config
+
+    - name: Verify Key Configuration Files Existence
+      run: |
+        test -f docker-compose.yml || (echo "docker-compose.yml is missing" && exit 1)
+        test -f prometheus/prometheus.yml || (echo "prometheus/prometheus.yml is missing" && exit 1)
+        test -f prometheus/alert.rules.yml || (echo "prometheus/alert.rules.yml is missing" && exit 1)
+        test -f alertmanager/alertmanager.yml || (echo "alertmanager/alertmanager.yml is missing" && exit 1)
+        test -f grafana/provisioning/dashboards/dashboard.json || (echo "grafana/provisioning/dashboards/dashboard.json is missing" && exit 1)
+        test -f promtail/promtail-config.yml || (echo "promtail/promtail-config.yml is missing" && exit 1)
+        test -f loki/loki-config.yml || (echo "loki/loki-config.yml is missing" && exit 1)
+        test -f README.md || (echo "README.md is missing" && exit 1)
+        test -f docs/runbook.md || (echo "docs/runbook.md is missing" && exit 1)
+        test -f docs/troubleshooting.md || (echo "docs/troubleshooting.md is missing" && exit 1)
+
+    - name: Validate Basic Workspace & Script Structure
+      run: |
+        test -f scripts/chaos_injector.py || (echo "chaos_injector.py is missing" && exit 1)
+        test -f scripts/ai_incident_reporter.py || (echo "ai_incident_reporter.py is missing" && exit 1)
