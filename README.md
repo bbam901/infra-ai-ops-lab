@@ -104,13 +104,15 @@ docker compose ps
 | Alertmanager | http://localhost:9093 | 발생한 알림 확인 |
 | Grafana | http://localhost:3050 | 대시보드 확인 |
 | cAdvisor | http://localhost:8080 | 컨테이너 리소스 확인 |
-| Loki | http://localhost:3100 | 로그 저장소 API |
+| Loki | http://localhost:3100/ready | Loki API 상태 확인 |
 
 Grafana 기본 계정:
 
 ```text
 admin / admin
 ```
+
+Loki는 별도의 웹 화면을 제공하는 서비스가 아니라 로그 저장소 API입니다. 따라서 `http://localhost:3100`으로 접속하면 404가 보일 수 있습니다. 상태 확인은 `http://localhost:3100/ready`에서 하고, 실제 로그 조회는 Grafana의 Explore 메뉴에서 Loki datasource를 선택해 확인합니다.
 
 ---
 
